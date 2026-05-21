@@ -1,0 +1,33 @@
+{
+  "name": "R & Python Oceanography",
+  "image": "rocker/geospatial:latest",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12" // Installs a clean, modern Python
+    },
+    "ghcr.io/rocker-org/devcontainer-features/quarto-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "REditorSupport.r",
+        "ms-python.python",
+        "ms-python.debugpy", // Enables the "Run and Debug" button for Python
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "quarto.quarto"
+      ],
+      "settings": {
+        // This ensures the Python extension uses the right interpreter by default
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  },
+
+  // Combined install for R and Python
+  "postCreateCommand": "Rscript -e 'install.packages(c(\"rerddap\", \"seewave\"))' && pip3 install pandas numpy matplotlib seaborn scikit-learn scipy",
+
+  "forwardPorts": [3838, 4200]
+}
