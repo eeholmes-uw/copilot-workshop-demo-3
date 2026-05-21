@@ -14,6 +14,7 @@ if (length(missing_packages) > 0) {
 erddap_url <- "https://coastwatch.pfeg.noaa.gov/erddap/"
 dataset_id <- "ncdcOisst21Agg_LonPM180"
 sst_variable <- "sst"
+sst_palette <- c("#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c")
 
 get_sst_info <- local({
   cache <- NULL
@@ -101,7 +102,11 @@ join_sst_to_grid <- function(grid_points, sst_grid) {
   lon_values <- sort(unique(sst_grid$lon))
 
   if (length(lat_values) == 0 || length(lon_values) == 0) {
-    stop("No SST values were returned for the selected date.")
+    stop(
+      "No SST values were returned for the selected date ",
+      "(latitude points: ", length(lat_values),
+      ", longitude points: ", length(lon_values), ")."
+    )
   }
 
   matched_lat <- lat_values[nearest_index(lat_values, grid_points$lat)]
@@ -121,10 +126,12 @@ join_sst_to_grid <- function(grid_points, sst_grid) {
 
 fetch_sst_for_date <- function(selected_date) {
   survey_grid <- get_nwfsc_combo_grid()
+  selected_day <- as.character(as.Date(selected_date))
+  time_range <- c(selected_day, selected_day)
   sst_grid <- rerddap::griddap(
     get_sst_info(),
     url = erddap_url,
-    time = rep(as.character(as.Date(selected_date)), 2),
+    time = time_range,
     latitude = range(survey_grid$lat, na.rm = TRUE),
     longitude = range(survey_grid$lon, na.rm = TRUE),
     fields = sst_variable,
@@ -239,7 +246,7 @@ server <- function(input, output, session) {
     }
 
     palette <- leaflet::colorNumeric(
-      palette = c("#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c"),
+      palette = sst_palette,
       domain = result$data$sst,
       na.color = "#808080"
     )
